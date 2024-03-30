@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 
 
 def main(args):
-    pytorch_device = torch.device('cuda:0')
+    pytorch_device = torch.device('cuda:1')
 
     config_path = args.config_path
 
