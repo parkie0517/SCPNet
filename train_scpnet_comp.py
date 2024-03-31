@@ -1,8 +1,3 @@
-# -*- coding:utf-8 -*-
-# author: Xinge, Xzy
-# @file: train_cylinder_asym.py
-
-
 import os
 import time
 import argparse
@@ -26,13 +21,14 @@ import yaml
 warnings.filterwarnings("ignore")
 
 
-def main(args):
-    pytorch_device = torch.device('cuda:1')
+def main(args): # args should contain informatin about the path of the configuration fie
+    pytorch_device = torch.device('cuda:0') # uses the first GPU available right now. returns 'cuda:0'
 
-    config_path = args.config_path
-
-    configs = load_config_data(config_path)
-
+    config_path = args.config_path # returns the path of the config file
+    
+    configs = load_config_data(config_path) # returns the dict type of the data
+    # print(configs) # print how the config looks like
+    
     dataset_config = configs['dataset_params']
     train_dataloader_config = configs['train_data_loader']
     val_dataloader_config = configs['val_data_loader']
@@ -51,10 +47,14 @@ def main(args):
     model_save_path = train_hypers['model_save_path']
 
     SemKITTI_label_name = get_SemKITTI_label_name(dataset_config["label_mapping"])
+    # print(SemKITTI_label_name) # print all the 20 classes, which is in a dict type
+    
     unique_label = np.asarray(sorted(list(SemKITTI_label_name.keys())))[1:] - 1
     unique_label_str = [SemKITTI_label_name[x] for x in unique_label + 1]
-
-    my_model = model_builder.build(model_config)
+    print(unique_label) # print the id of the 19 classes (except for unlabeled)
+    print(unique_label_str) # print the names of the 19 classes
+    return
+    my_model = model_builder.build(model_config) # takes model config as input
     model_load_path += '0.pth'
     model_save_path += ''
     if os.path.exists(model_load_path):
@@ -212,9 +212,9 @@ def main(args):
 if __name__ == '__main__':
     # Training settings
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-y', '--config_path', default='config/semantickitti-multiscan.yaml')
-    args = parser.parse_args()
+    parser.add_argument('-y', '--config_path', default='config/semantickitti-multiscan.yaml') # the yaml file contains configurations for training the NN
+    args = parser.parse_args() # returns the arguments provided by the user or the default
 
-    print(' '.join(sys.argv))
-    print(args)
+    #print(' '.join(sys.argv)) # prints the entire command line used to execute the script
+    #print(args) # Prints the parsed command line arguments
     main(args)

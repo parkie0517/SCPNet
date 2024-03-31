@@ -22,6 +22,8 @@ This repo is based on the official SCPNet code.
     - conda install pytorch-scatter -c pyg
 - spconv
     - pip install spconv-cu113
+- strictyaml
+    - pip install strictyaml
 
 
 
