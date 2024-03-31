@@ -52,7 +52,7 @@ class cylinder_fea(nn.Module):
     def forward(self, pt_fea, xy_ind):
         cur_dev = pt_fea[0].get_device()
 
-        ### concate everything
+        ### concatenate everything
         cat_pt_ind = []
         for i_batch in range(len(xy_ind)):
             cat_pt_ind.append(F.pad(xy_ind[i_batch], (1, 0), 'constant', value=i_batch))

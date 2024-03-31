@@ -6,6 +6,7 @@ import numpy as np
 import spconv
 import torch
 from torch import nn
+import sys
 
 
 def conv3x3(in_planes, out_planes, stride=1, indice_key=None):
@@ -271,11 +272,13 @@ class Asymm_3d_spconv(nn.Module):
 
         sparse_shape = np.array(output_shape)
         print(sparse_shape)
+        
         self.sparse_shape = sparse_shape
 
         ### Completion sub-network
         mybias = False  # False
-        chs = [init_size, init_size*1, init_size*1, init_size*1]
+        chs = [init_size, init_size*1, init_size*1, init_size*1] # (32, 32, 32,32)
+        # Conv3d(in_channels, out_channels, kernel_size, stride, padding, bias)
         self.a_conv1 = nn.Sequential(nn.Conv3d(chs[1], chs[1], 3, 1, padding=1, bias=mybias), nn.ReLU())
         self.a_conv2 = nn.Sequential(nn.Conv3d(chs[1], chs[1], 3, 1, padding=1, bias=mybias), nn.ReLU())
         self.a_conv3 = nn.Sequential(nn.Conv3d(chs[1], chs[1], 5, 1, padding=2, bias=mybias), nn.ReLU())
@@ -323,16 +326,20 @@ class Asymm_3d_spconv(nn.Module):
         x2 = self.a_conv2(x1)
         x3 = self.a_conv3(x1)
         x4 = self.a_conv4(x1)
-        t1 = torch.cat((x2, x3, x4), 1)
-        x5 = self.a_conv5(t1)
+        # output channel number of x2, x3 and x4 are all 32
+        t1 = torch.cat((x2, x3, x4), 1) # concatenate along the channel dimension
+        # now, t1's number of channel is 32*3
+        x5 = self.a_conv5(t1) 
         x6 = self.a_conv6(t1)
         x7 = self.a_conv7(t1)
+        # output channel number of x5, x6 and x7 are all 32
         x = torch.cat((x1, x2, x3, x4, x5, x6, x7), 1)
-        y0 = self.ch_conv1(x)
+        # x's number of channel is 32*7
+        y0 = self.ch_conv1(x) # use (1, 1, 1) kernel to aggregate information
         y1 = self.res_1(x_dense)
         y2 = self.res_2(x_dense)
         y3 = self.res_3(x_dense)
-        x = x_dense + y0 + y1 + y2 + y3
+        x = x_dense + y0 + y1 + y2 + y3 # this is the fianl element-wise sum at the end of the 3d completion sub-net
 
         # Dense to sparse
         coord, features = extract_nonzero_features(x)

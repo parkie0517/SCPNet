@@ -51,10 +51,12 @@ def main(args): # args should contain informatin about the path of the configura
     
     unique_label = np.asarray(sorted(list(SemKITTI_label_name.keys())))[1:] - 1
     unique_label_str = [SemKITTI_label_name[x] for x in unique_label + 1]
-    print(unique_label) # print the id of the 19 classes (except for unlabeled)
-    print(unique_label_str) # print the names of the 19 classes
-    return
+    # print(unique_label) # print the id of the classes except for the unlabeled class
+    # print(unique_label_str) # print the names of the 19 classes
+
+    # returns the SCPNet model (just the student)
     my_model = model_builder.build(model_config) # takes model config as input
+    
     model_load_path += '0.pth'
     model_save_path += ''
     if os.path.exists(model_load_path):

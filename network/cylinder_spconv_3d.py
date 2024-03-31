@@ -26,7 +26,7 @@ def get_model_class(name):
 @register_model
 class cylinder_asym(nn.Module):
     def __init__(self,
-                 cylin_model,
+                 cylin_model, # model
                  segmentator_spconv,
                  sparse_shape,
                  ):
