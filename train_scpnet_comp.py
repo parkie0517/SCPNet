@@ -93,7 +93,6 @@ def main(args): # args should contain informatin about the path of the configura
                                                                   use_multiscan=True)
 
 
-    
     # training
     epoch = 0
     best_val_miou = 0
@@ -107,7 +106,7 @@ def main(args): # args should contain informatin about the path of the configura
     class_strings = semkittiyaml["labels"]
     class_inv_remap = semkittiyaml["learning_map_inv"]
 
-    while epoch < train_hypers['max_num_epochs']:
+    while epoch < 1: #train_hypers['max_num_epochs']: # default is 40 epoch
         loss_list = []
         pbar = tqdm(total=len(train_dataset_loader))
         time.sleep(10)
@@ -124,11 +123,9 @@ def main(args): # args should contain informatin about the path of the configura
                 else:
                     evaluator = iouEval(num_class, [])
                 with torch.no_grad():
-                    for i_iter_val, (_, val_vox_label, val_grid, _, val_pt_fea, val_index, origin_len) in enumerate(
-                            val_dataset_loader):
+                    for i_iter_val, (_, val_vox_label, val_grid, _, val_pt_fea, val_index, origin_len) in enumerate(val_dataset_loader):
 
-                        val_pt_fea_ten = [torch.from_numpy(i).type(torch.FloatTensor).to(pytorch_device) for i in
-                                        val_pt_fea]
+                        val_pt_fea_ten = [torch.from_numpy(i).type(torch.FloatTensor).to(pytorch_device) for i in val_pt_fea]
                         val_grid_ten = [torch.from_numpy(i).to(pytorch_device) for i in val_grid]
 
                         for bat in range(val_batch_size):
