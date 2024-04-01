@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from tqdm import tqdm
+from torchsummary import summary
 
 # from utils.metric_util import per_class_iu, fast_hist_crop
 from dataloader.pc_dataset import get_SemKITTI_label_name, get_eval_mask, unpack
@@ -61,14 +62,23 @@ def main(args): # args should contain informatin about the path of the configura
     model_save_path += ''
     if os.path.exists(model_load_path):
         print('Load model from: %s' % model_load_path)
-        my_model = load_checkpoint(model_load_path, my_model)
+        my_model = load_checkpoint(model_load_path, my_model) # load the pre-trained weights
     else:
         print('No existing model, training model from scratch...')
+    
+    """
+    # print the summary of the model
+    # input to my_model is (train_pt_fea_ten, train_vox_ten, batch_size)
+    summary(my_model, input_size=(I DONT KNOW WHAT TO GIVE HERE))
+    """
+
 
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
-    print(model_save_path)
-
+        print(f"Created a new path: {model_save_path}")
+    else:
+        print(f"The path already exists: {model_save_path}")
+    
     my_model.to(pytorch_device)
     optimizer = optim.Adam(my_model.parameters(), lr=train_hypers["learning_rate"])
 
@@ -82,6 +92,8 @@ def main(args): # args should contain informatin about the path of the configura
                                                                   use_tta=False,
                                                                   use_multiscan=True)
 
+
+    
     # training
     epoch = 0
     best_val_miou = 0
