@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from tqdm import tqdm
-from torchsummary import summary
+
 
 # from utils.metric_util import per_class_iu, fast_hist_crop
 from dataloader.pc_dataset import get_SemKITTI_label_name, get_eval_mask, unpack
@@ -66,12 +66,6 @@ def main(args): # args should contain informatin about the path of the configura
     else:
         print('No existing model, training model from scratch...')
     
-    """
-    # print the summary of the model
-    # input to my_model is (train_pt_fea_ten, train_vox_ten, batch_size)
-    summary(my_model, input_size=(I DONT KNOW WHAT TO GIVE HERE))
-    """
-
 
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
@@ -79,12 +73,18 @@ def main(args): # args should contain informatin about the path of the configura
     else:
         print(f"The path already exists: {model_save_path}")
     
+
     my_model.to(pytorch_device)
-    optimizer = optim.Adam(my_model.parameters(), lr=train_hypers["learning_rate"])
 
-    loss_func, lovasz_softmax = loss_builder.build(wce=True, lovasz=True,
+    # uncomment the line below to check how the model is defined
+    # print(my_model)
+    
+    optimizer = optim.Adam(my_model.parameters(), lr=train_hypers["learning_rate"]) # initial lr = 0.0015
+
+    # the code below is missing the proposed distillation loss
+    loss_func, lovasz_softmax = loss_builder.build(wce=True, lovasz=True, 
                                                    num_class=num_class, ignore_label=ignore_label)
-
+    
     train_dataset_loader, val_dataset_loader, val_pt_dataset = data_builder.build(dataset_config,
                                                                   train_dataloader_config,
                                                                   val_dataloader_config,
