@@ -7,6 +7,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 
+from tensorboardX import SummaryWriter
 
 # from utils.metric_util import per_class_iu, fast_hist_crop
 from dataloader.pc_dataset import get_SemKITTI_label_name, get_eval_mask, unpack
@@ -92,10 +93,12 @@ def main(args): # args should contain informatin about the path of the configura
                                                                   use_tta=False,
                                                                   use_multiscan=True)
 
-
     # training
     epoch = 0
     best_val_miou = 0
+    val_miou = 0
+    val_loss_list = []
+    loss_list = []
     my_model.train()
     global_iter = 0
     check_iter = train_hypers['eval_every_n_steps']
@@ -107,7 +110,7 @@ def main(args): # args should contain informatin about the path of the configura
     class_inv_remap = semkittiyaml["learning_map_inv"]
 
     while epoch < train_hypers['max_num_epochs']: # default is 40 epoch
-        loss_list = []
+        
         pbar = tqdm(total=len(train_dataset_loader))
         time.sleep(10)
         # lr_scheduler.step(epoch)
@@ -116,7 +119,7 @@ def main(args): # args should contain informatin about the path of the configura
             if global_iter % check_iter == 0 and epoch > 0:
                 my_model.eval()
 
-                val_loss_list = []
+                
                 val_method = 2  # 1-segmentation method, 2-completion method
                 if val_method == 1:
                     hist_list = []
@@ -217,6 +220,15 @@ def main(args): # args should contain informatin about the path of the configura
                 else:
                     print('loss error')
         pbar.close()
+        
+
+        model_save_path += 'model_'+str(epoch)+'.pth'  # You can name your saved model file as you like, often with a .pth extension
+        torch.save(my_model.state_dict(), model_save_path)
+        print(f'Model saved at: {model_save_path}')
+        writer.add_scalar("mIoU/val", val_miou, epoch) # tag, value, step
+        writer.add_scalar("Loss/val", np.mean(val_loss_list), epoch) # tag, value, step
+        writer.add_scalar("Loss/train", np.mean(loss_list), epoch) # tag, value, step
+
         epoch += 1
 
 
@@ -228,4 +240,8 @@ if __name__ == '__main__':
 
     #print(' '.join(sys.argv)) # prints the entire command line used to execute the script
     #print(args) # Prints the parsed command line arguments
+    
+    # tensorboard
+    writer = SummaryWriter('./logs/SCPNet_1')
     main(args)
+    writer.close()
