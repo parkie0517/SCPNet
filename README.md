@@ -8,6 +8,7 @@ This repo is based on the official SCPNet code.
     - conda config --set ssl_verify false
 - torch 1.10.0, cuda==11.3 (if you get a Conda HTTP error, keep on reinstalling until it finishes. There is no possible solution for this as this is a network issue)
     - conda install -y pytorch==1.10.0 torchvision==0.11.0 cudatoolkit=11.3 -c pytorch -c conda-forge
+    - conda install -y cudatoolkit-dev=11.3 -c conda-forge
 - check if CUDA is available
     - CUDA_VISIBLE_DEVICES=1 python
     - import torch
@@ -28,20 +29,29 @@ This repo is based on the official SCPNet code.
     - git clone https://github.com/tyjiang1997/spconv1.0.git  --recursive
     - sudo apt-get install libboost-all-dev
     - conda install -y anaconda::cmake
-    - 
-    - 
+    - conda install -y anaconda::cudnn
+    - CUDA_VISIBLE_DEVICES=1 python setup.py bdist_wheel
+        - below are the two possible erros that you might encounter
+            - 1. broken nvcc
+                - then, open CMakeLists.txt add the following lines in between line 1 and 2
+                    - set(CMAKE_CUDA_COMPILER "/home/user/anaconda3/envs/REPLACE_THIS_WITH_THE_NAME_OF_UR_CONDA_ENVIRONMENT/bin/nvcc")
+                    - set(CUDA_TOOLKIT_ROOT_DIR "/home/user/anaconda3/envs/REPLACE_THIS_WITH_THE_NAME_OF_UR_CONDA_ENVIRONMENT")
+            - 2. no matching function for call to 'torch::jit::RegisterOperators::RegisterOperators'
+                - then, go to spconv/src/spconv/all.cc
+                - use "torch::RegisterOperators()" instead of "torch::jit::RegisterOperator()"
+    - cd ./dist
+    - pip install CHANGE_THIS_TO_THE_NAME_OF_THE_WHEEL_FILE
+- check if spconv==1.0 is installed properly
+    - conda list
 - strictyaml
     - pip install strictyaml
+- check if strictyaml is installed properly
+    - conda list
 
 ## 2. Dataset Preparation
 
 
-## 3. Error Fix to the Original Code
-1. AttributeError in "segmentator_3d_asymm_spconv.py"  
-Used "from spconv.pytorch.conv import SubMConv3d, SparseConv3d, SparseInverseConv3d" in line 7
-
-## 4. Things I Was Curious About
+## 3. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?
     - By using an MPB (multi-path block) instead of pooling operations.
     - MPB is composed of 3D convolution operations.
- 

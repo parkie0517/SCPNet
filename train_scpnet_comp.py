@@ -106,7 +106,7 @@ def main(args): # args should contain informatin about the path of the configura
     class_strings = semkittiyaml["labels"]
     class_inv_remap = semkittiyaml["learning_map_inv"]
 
-    while epoch < 1: #train_hypers['max_num_epochs']: # default is 40 epoch
+    while epoch < train_hypers['max_num_epochs']: # default is 40 epoch
         loss_list = []
         pbar = tqdm(total=len(train_dataset_loader))
         time.sleep(10)
