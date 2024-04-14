@@ -1,6 +1,7 @@
 # SCPNet
 This repo is based on the official SCPNet code.
 
+
 ## 1. Environment Setup Guide (Works as of 2024-04-02)
 - python==3.7
     - conda create -n SCPNet python=3.7
@@ -48,10 +49,30 @@ This repo is based on the official SCPNet code.
 - check if strictyaml is installed properly
     - conda list
 
+
 ## 2. Dataset Preparation
+- Follow the KITTI dataset official guide
 
 
-## 3. Things I Was Curiousd About
+## 3. Training
+- run the code below to train the SCPNet model
+    - python train_scpnet_comp.py
+
+
+## 4. Evaluation
+- output predictions by running the code below
+    - test_scpnet_comp.py
+- clone the semantic-KITTI api in the different directory
+    - git clone https://github.com/PRBonn/semantic-kitti-api
+- change directory to the cloned directory
+    - cd PATH_TO_THE_CLONED_DIRECTORY
+- run the code below
+    - python evaluate_completion.py --dataset LOCATION_OF_THE_ORIGINAL_KITTIE_DATASET --predictions LOCATION_OF_THE_PREDICTIONS --split valid
+- the image below is the result that I got
+![alt text](image.png)
+
+
+## 5. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?
     - By using an MPB (multi-path block) instead of pooling operations.
     - MPB is composed of 3D convolution operations.
