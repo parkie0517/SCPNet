@@ -59,14 +59,14 @@ def main(args): # args should contain informatin about the path of the configura
     # returns the SCPNet model (just the student)
     my_model = model_builder.build(model_config) # takes model config as input
     
-    model_load_path += '0.pth'
+    model_load_path += "iou20.6321_epoch14.pth" # name of the saved model
     model_save_path += ''
     if os.path.exists(model_load_path):
         print('Load model from: %s' % model_load_path)
         my_model = load_checkpoint(model_load_path, my_model) # load the pre-trained weights
     else:
         print('No existing model, training model from scratch...')
-    
+
 
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
@@ -102,6 +102,7 @@ def main(args): # args should contain informatin about the path of the configura
     my_model.train()
     global_iter = 0
     check_iter = train_hypers['eval_every_n_steps']
+    model_save_name = ""
 
     # learning map
     with open("config/label_mapping/semantic-kitti.yaml", 'r') as stream:
@@ -180,6 +181,10 @@ def main(args): # args should contain informatin about the path of the configura
                 # save model if performance is improved
                 if best_val_miou < val_miou:
                     best_val_miou = val_miou
+                    # delete previous model
+                    if os.path.exists(model_save_name):
+                        os.remove(model_save_name) # delete file
+                        print(f"Deleted previous checkpoint: {model_save_name}")
                     # save model with best val miou for completion
                     model_save_name = model_save_path + ('iou%.4f_epoch%d.pth' % (val_miou, epoch))
                     torch.save(my_model.state_dict(), model_save_name)
@@ -221,10 +226,6 @@ def main(args): # args should contain informatin about the path of the configura
                     print('loss error')
         pbar.close()
         
-
-        model_save_path += 'model_'+str(epoch)+'.pth'  # You can name your saved model file as you like, often with a .pth extension
-        torch.save(my_model.state_dict(), model_save_path)
-        print(f'Model saved at: {model_save_path}')
         writer.add_scalar("mIoU/val", val_miou, epoch) # tag, value, step
         writer.add_scalar("Loss/val", np.mean(val_loss_list), epoch) # tag, value, step
         writer.add_scalar("Loss/train", np.mean(loss_list), epoch) # tag, value, step

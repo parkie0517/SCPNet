@@ -1,7 +1,3 @@
-# -*- coding:utf-8 -*-
-# author: Xinge, Xzy
-# @file: train_cylinder_asym.py
-
 
 import os
 import time
@@ -56,7 +52,7 @@ def main(args):
     unique_label_str = [SemKITTI_label_name[x] for x in unique_label + 1]
 
     my_model = model_builder.build(model_config)
-    model_load_path += 'iou26.6891_epoch19.pth'
+    model_load_path += 'iou21.6220_epoch12.pth' # the best model 
     if os.path.exists(model_load_path):
         print('Load model from: %s' % model_load_path)
         my_model = load_checkpoint(model_load_path, my_model)
