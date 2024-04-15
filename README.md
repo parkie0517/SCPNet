@@ -62,7 +62,7 @@ This repo is based on the official SCPNet code.
 ## 4. Evaluation
 - output predictions by running the code below
     - test_scpnet_comp.py
-- clone the semantic-KITTI api in the different directory
+- clone the semantic-KITTI api in a different directory
     - git clone https://github.com/PRBonn/semantic-kitti-api
 - change directory to the cloned directory
     - cd PATH_TO_THE_CLONED_DIRECTORY
