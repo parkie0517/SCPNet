@@ -71,8 +71,21 @@ This repo is based on the official SCPNet code.
 - the image below is the result that I got
 ![alt text](image.png)
 
+## 5. Visualization
+- please follow [4. Evaluation] to clone the semantic-KITTI api before visualizing the point cloud
+- install the following packages
+    - conda install -y vispy
+    - conda install -y matplotlib
+- then, run the following code to visualzie the point cloud
+    - python visualize.py --sequence 00 --dataset /mnt/ssd2/jihun/dataset/sequences/00
 
-## 5. Things I Was Curiousd About
+## 6. Generate Multi-frame Point Cloud
+- please follow [4. Evaluation] to clone the semantic-KITTI api before generating the multi-frame point cloud
+- then run this code
+    - python generate_sequential.py --dataset PATH_TO_KITTI --sequence_length NUMBER_OF_N --output OUTPUT_PATH
+    - python generate_sequential.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 3 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
+
+## 6. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?
     - By using an MPB (multi-path block) instead of pooling operations.
     - MPB is composed of 3D convolution operations.
