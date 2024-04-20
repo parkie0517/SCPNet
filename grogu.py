@@ -1,7 +1,4 @@
-import os
-
-if os.path.exists("grogu.py"):
-    os.remove("./test.txt")
-    print("True")
-else:
-    print("False")
+import torch
+print(torch.cuda.is_available())
+print(torch.cuda.current_device())
+print(torch.cuda.get_device_name(0))

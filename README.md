@@ -83,7 +83,7 @@ This repo is based on the official SCPNet code.
 - please follow [4. Evaluation] to clone the semantic-KITTI api before generating the multi-frame point cloud
 - then run this code
     - python generate_sequential.py --dataset PATH_TO_KITTI --sequence_length NUMBER_OF_N --output OUTPUT_PATH
-    - python generate_sequential.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 4 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
+    - CUDA_VISIBLE_DEVICES=1 python generate_sequential.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 4 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
 
 ## 6. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?
