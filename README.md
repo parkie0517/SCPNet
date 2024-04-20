@@ -57,6 +57,7 @@ This repo is based on the official SCPNet code.
 ## 3. Training
 - run the code below to train the SCPNet model
     - python train_scpnet_comp.py
+    - CUDA_VISIBLE_DEVICES=1 python train_scpnet_comp.py
 
 
 ## 4. Evaluation

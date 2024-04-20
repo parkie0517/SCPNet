@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import torch
 from tqdm import tqdm
-from ply_writer import *
+# from ply_writer import *
 # from utils.metric_util import per_class_iu, fast_hist_crop
 from dataloader.pc_dataset import get_SemKITTI_label_name,get_eval_mask,unpack
 from builder import data_builder, model_builder, loss_builder
@@ -64,13 +64,20 @@ def label2voxel(prediction_dir,original_dataset):
         write_ply(f"{output_dir}/{pred.split('/')[-1].replace('label','ply')}", [vox_idx.astype(np.uint8),colors.astype(np.uint8)], ['x', 'y', 'z','red', 'green', 'blue'])
         # import pdb;pdb.set_trace()
         
-with open("config/label_mapping/semantic-kitti.yaml", 'r') as stream:
-    semkittiyaml = yaml.safe_load(stream)
-class_remap = semkittiyaml["learning_map"]
-maxkey2 = max(class_remap.keys())
-remap_lut = np.zeros((maxkey2 + 100), dtype=np.int32)
-remap_lut[list(class_remap.keys())] = list(class_remap.values())
-remap_lut[remap_lut == 0] = 255   # map 0 to 'invalid'
-remap_lut[0] = 0  # only 'empty' stays 'empty'.
 
-label2voxel('/mnt/jihun5/tta-SCPNetv1/out_scpnet/val/sequences/08/predictions_s_5_lr_0.001_scanwise_iter5_strong_baseline','/mnt/jihun5/tta-SCPNetv2/dataset')
+if __name__ == "__main__":  
+    with open("config/label_mapping/semantic-kitti.yaml", 'r') as stream:
+        semkittiyaml = yaml.safe_load(stream)
+    print(semkittiyaml)
+    exit(0)
+    class_remap = semkittiyaml["learning_map"]
+    maxkey2 = max(class_remap.keys())
+    remap_lut = np.zeros((maxkey2 + 100), dtype=np.int32)
+    remap_lut[list(class_remap.keys())] = list(class_remap.values())
+    remap_lut[remap_lut == 0] = 255   # map 0 to 'invalid'
+    remap_lut[0] = 0  # only 'empty' stays 'empty'.
+
+    prediction_dir = '/mnt/jihun5/tta-SCPNetv1/out_scpnet/val/sequences/08/predictions_s_5_lr_0.001_scanwise_iter5_strong_baseline'
+    original_dataset = '/mnt/ssd2/jihun/dataset/'
+
+    label2voxel(prediction_dir, original_dataset)

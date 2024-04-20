@@ -59,7 +59,7 @@ def main(args): # args should contain informatin about the path of the configura
     # returns the SCPNet model (just the student)
     my_model = model_builder.build(model_config) # takes model config as input
     
-    model_load_path += "iou20.6321_epoch14.pth" # name of the saved model
+    model_load_path += "no_model.pth" # name of the saved model
     model_save_path += ''
     if os.path.exists(model_load_path):
         print('Load model from: %s' % model_load_path)
@@ -243,6 +243,6 @@ if __name__ == '__main__':
     #print(args) # Prints the parsed command line arguments
     
     # tensorboard
-    writer = SummaryWriter('./logs/SCPNet_1')
+    writer = SummaryWriter('./logs/SCPNet_multiframe_4')
     main(args)
     writer.close()
