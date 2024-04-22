@@ -13,15 +13,15 @@ This repo is based on the official SCPNet code.
 - check if CUDA is available
     - CUDA_VISIBLE_DEVICES=1 python grogu.py ✅
 - pyyaml
-    - conda install -y anaconda::pyyaml
+    - conda install -y anaconda::pyyaml ✅
 - Cython
-    - conda install -y anaconda::cython
+    - conda install -y anaconda::cython ✅
 - tqdm
-    - conda install -y anaconda::tqdm
+    - conda install -y anaconda::tqdm ✅
 - numba
-    - conda install -y anaconda::numba
+    - conda install -y anaconda::numba ✅
 - Numpy-indexed
-    - conda install -y conda-forge::numpy-indexed
+    - conda install -y conda-forge::numpy-indexed ✅
 - torch-scatter
     - conda install -y pytorch-scatter -c pyg
 - spconv==1.0
