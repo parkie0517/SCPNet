@@ -52,7 +52,8 @@ This repo is based on the official SCPNet code.
 - Follow the KITTI dataset official guide
 - You need the xxxxxx.bin and xxxxxx.label files inside the voxels directory the for semantic scene completion task
 - You will have 4649 data for training and validation
-![alt text](image-2.png)
+![alt text](./image_src/image-1.png)
+
 
 ## 3. Training
 - run the code below to train the SCPNet model
@@ -70,7 +71,8 @@ This repo is based on the official SCPNet code.
 - run the code below
     - python evaluate_completion.py --dataset LOCATION_OF_THE_ORIGINAL_KITTIE_DATASET --predictions LOCATION_OF_THE_PREDICTIONS --split valid
 - the image below is the result that I got
-![alt text](image.png)
+![alt text](./image_src/image.png)
+
 
 ## 5. Visualization
 - You need a display connected to the server to see the visualization results
@@ -82,11 +84,13 @@ This repo is based on the official SCPNet code.
     - python visualize_voxels.py --sequence 00 --dataset /c/Users/Juni/desktop/scpnet/dataset/
 - if you run into no module found error, then install the necessary packages
 
-## 6. Generate Multi-frame Point Cloud
+
+## 6. Generate Multi-frame Dataset
 - please follow [4. Evaluation] to clone the semantic-KITTI api before generating the multi-frame point cloud
 - then run this code
-    - python generate_sequential.py --dataset PATH_TO_KITTI --sequence_length NUMBER_OF_N --output OUTPUT_PATH
-    - CUDA_VISIBLE_DEVICES=1 python generate_sequential.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 4 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
+    - python generate_multiframe.py --dataset PATH_TO_KITTI --sequence_length NUMBER_OF_N --output OUTPUT_PATH
+    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 4 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
+
 
 ## 6. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?
