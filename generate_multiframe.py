@@ -1,6 +1,18 @@
 import numpy as np
 import argparse
+import os
 # from pyquaternion import Quaternion
+
+def count_files(directory):
+    """
+    Returns the number of files in the specified directory
+    """
+    full_path = os.path.abspath(directory) # get the full path name
+    items = os.listdir(full_path) # get the list of files in the path
+    # Filter out directories, count only files
+    file_count = sum(os.path.isfile(os.path.join(full_path, item)) for item in items)
+    
+    return file_count
 
 def get_data(index):
     # Placeholder for your data loading logic
@@ -69,12 +81,16 @@ if __name__ == '__main__':
     
 
     # this should be automatically done
-    sequence_length = 4540  # Adjust based on your dataset specifics
+    voxel_locaiton = os.path.join(dataset, "voxels/")
 
-    print(dataset)
-    print(n)
-    print(increment)
-    print(sequence_length)
+    number_files = count_files(voxel_locaiton)
+    number_files = int((number_files/n) * increment)  # Adjust based on your dataset specifics
+
+    sequence_length = number_files - increment
+    print(f'Location of dataset: {dataset}')
+    print(f'number of multiframe: {n}')
+    print(f'increment size: {increment}')
+    print(f'files from 0 ~ {sequence_length} will be used')
 
 
     for i in range(0, sequence_length - increment * (n-1), increment):
