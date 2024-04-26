@@ -128,7 +128,8 @@ def build(dataset_config,
             collate_fn_BEV_tmp = collate_fn_BEV_ms
         else:
             collate_fn_BEV_tmp = collate_fn_BEV
-
+    print('length of train dataset: '+ str(len(train_dataset)))
+    print('length of validation dataset: '+ str(len(val_dataset)))
     train_dataset_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                        batch_size=train_dataloader_config["batch_size"],
                                                        collate_fn=collate_fn_BEV_tmp,
@@ -139,7 +140,9 @@ def build(dataset_config,
                                                      collate_fn=collate_fn_BEV_tmp,
                                                      shuffle=val_dataloader_config["shuffle"],
                                                      num_workers=val_dataloader_config["num_workers"])
-
+    print('length of train dataset loader: '+ str(len(train_dataset_loader)))
+    print('length of validation dataset loader: '+ str(len(val_dataset_loader)))
+    exit(0)
     if use_tta:
         return train_dataset_loader, val_dataset_loader, val_pt_dataset
     else:
