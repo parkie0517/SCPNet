@@ -59,6 +59,13 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '--output', '-o',
+        type=str,
+        required=True,
+        help='type in the output directory',
+    )
+
+    parser.add_argument(
         '--number', '-n',
         default='4',
         type=int,
@@ -76,6 +83,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args() # returns the arguments provided by the user or the default
     dataset = args.dataset
+    output = args.output
     n = args.number
     increment = args.increment
     
@@ -83,11 +91,19 @@ if __name__ == '__main__':
     # this should be automatically done
     voxel_locaiton = os.path.join(dataset, "voxels/")
 
+    if os.path.exists(output):
+        print("output directory already exists")
+    else:
+        os.makedirs(output)
+        print("output directory does not exist")
+        print(f'{output} path has been created')
+
     number_files = count_files(voxel_locaiton)
     number_files = int((number_files/n) * increment)  # Adjust based on your dataset specifics
 
     sequence_length = number_files - increment
     print(f'Location of dataset: {dataset}')
+    print(f'Location of output directory: {output}')
     print(f'number of multiframe: {n}')
     print(f'increment size: {increment}')
     print(f'files from 0 ~ {sequence_length} will be used')
