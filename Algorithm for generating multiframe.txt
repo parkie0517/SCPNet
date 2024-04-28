@@ -1,0 +1,31 @@
+Algorithm for generating multiframe semantic KITTI
+n: the number of the frames that will be combined (eg. n = 4, then 4 frames are being combined)
+i: the frame that is being added (eg. i = 000000 and n = 4, then 000005, 000010, 000015 are added to 000000)
+
+# repeat for all the files except for the last few
+for i in [000000, 000005, .... , 004540 - 5*(n-1)] # the algorithm should be able to find the last data in the directory (in this example the last data is 004540)
+    # open i data
+    i_bin, i_label, i_invalid, i_occluded = get_data(i)
+
+    # read i pose
+    i_pose = get_pose(i)
+
+    for j in [i+5*(1), i+5*(2), .... , i+5*(n-1)]
+        # open j data
+        j_bin, j_label, j_invalid, j_occluded = get_data(j)
+
+        # read j pose
+        j_pose = get_pose(j)
+        
+        
+        # returns the rotational difference and translation difference between i and j
+        rotational_diff, translation_diff = caculate_diff(i_pose, j_pose)
+        
+        # align j's space to i's space
+        aligned_j_bin, aligned_j_label, aligned_j_invalid, aligned_j_occluded = align(j_bin, j_label, j_invalid, j_occluded, rotaional_diff, translation_diff)
+	
+        # filter out voxels that are outside of the i's space
+        filtered_j_bin, filtered_j_label, filtered_j_invalid, filtered_j_occluded = filter(i_space, aligned_j_bin, aligned_j_label, aligned_j_invalid, aligned_j_occluded)
+
+        # add filtered voxels into i space
+        i_bin, i_label, i_invalid, i_occluded = add(filtered_j_bin, filtered_j_label, filtered_j_invalid, filtered_j_occluded, i_bin, i_label, i_invalid, i_occluded)

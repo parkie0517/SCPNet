@@ -86,10 +86,12 @@ This repo is based on the official SCPNet code.
 
 
 ## 6. Generate Multi-frame Dataset
-- please follow [4. Evaluation] to clone the semantic-KITTI api before generating the multi-frame point cloud
-- then run this code
-    - python generate_multiframe.py --dataset PATH_TO_KITTI --sequence_length NUMBER_OF_N --output OUTPUT_PATH
-    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py --dataset /mnt/ssd2/jihun/dataset --sequence_length 4 --output /mnt/ssd2/jihun/dataset/multiframe/length_4
+- The image below is the pseudo algorithm I made to create the multi-frame generation algorithm  
+![alt text](image.png)
+- The text file of the algorithm is also in this repository
+- Okay, now run the code below
+    - python generate_multiframe.py --dataset PATH_TO_KITTI --number NUMBER_OF_N --output OUTPUT_PATH
+    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py -d /mnt/ssd2/jihun/dataset/sequences/00 -o /mnt/ssd2/jihun/dataset/multiframe/dataset/sequences/00/
 
 
 ## 6. Things I Was Curiousd About
