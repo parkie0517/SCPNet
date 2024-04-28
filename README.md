@@ -51,7 +51,7 @@ This repo is based on the official SCPNet code.
 ## 2. Dataset Preparation
 - Follow the KITTI dataset official guide
 - You need the xxxxxx.bin and xxxxxx.label files inside the voxels directory the for semantic scene completion task
-- You will have 4649 data for training and validation
+- You will have 4649 data for training and validation  
 ![alt text](./image_src/image-1.png)
 
 
