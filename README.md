@@ -91,7 +91,7 @@ This repo is based on the official SCPNet code.
 - The text file of the algorithm is also in this repository
 - Okay, now run the code below
     - python generate_multiframe.py --dataset PATH_TO_KITTI --number NUMBER_OF_N --output OUTPUT_PATH
-    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py -d /mnt/ssd2/jihun/dataset/sequences/00 -o /mnt/ssd2/jihun/dataset/multiframe/dataset/sequences/00/
+    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py -d /mnt/ssd2/jihun/dataset/sequences/00 -o /mnt/ssd2/jihun/dataset/multiframe/dataset/sequences/00
 
 
 ## 6. Things I Was Curiousd About
