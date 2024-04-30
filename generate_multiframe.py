@@ -35,7 +35,7 @@ def get_data(file_base, dataset_path):
             bits = np.unpackbits(data)  # Convert bytes to bits
             return bits.reshape((256, 256, 32))  # Reshape to 3D array
 
-
+ 
     # Function to read label data
     def load_label_data(file_path):
         with open(file_path, 'rb') as file:
