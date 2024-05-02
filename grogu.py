@@ -1,8 +1,10 @@
-import torch
-print(torch.cuda.is_available())
-print(torch.cuda.current_device())
-print(torch.cuda.get_device_name(0))
 
-var = None
-if not isinstance(var, int) or var <= 0:
-    print(var)
+
+import numpy as np
+
+
+
+# Example usage:
+file_path = './../dataset/sequences/00/voxels/000000.label'
+voxel_labels = read_label_file(file_path)
+print(type(voxel_labels[123, 123, 21]))

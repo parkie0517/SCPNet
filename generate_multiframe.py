@@ -41,12 +41,13 @@ def get_data(file_base, dataset_path):
             return bits.reshape((256, 256, 32))  # Reshape to 3D array
 
  
-    # Function to read label data
     def load_label_data(file_path):
+        # Open the file in binary mode
         with open(file_path, 'rb') as file:
-            data = np.fromfile(file, dtype=np.uint8)  # Read data as 16-bit unsigned integers
-            bits = np.unpackbits(data)  # Convert bytes to bits
-            return bits.reshape((256, 256, 32, 16))  # Reshape to 3D array
+            # Read the file content into a numpy array of type uint16
+            data = np.fromfile(file, dtype=np.uint16)
+        
+        return data.reshape((256, 256, 32))
 
 
     # 2. read the data
@@ -243,15 +244,21 @@ if __name__ == '__main__':
 
     # algorithm for creating the multi-frame semantic KITTI dataset
     for i in range(0, sequence_length - increment * (n-2), increment):
-        
-        file_base = f"{i:06d}"
+        # Create File Base String
+        file_base = f"{i:06d}" # Convert i's data type from INT to STR and pad 0 at the front
 
-
-        
         # read i-th data
         i_bin, i_label, i_invalid, i_occluded = get_data(file_base, dataset) # read i-th voxel data
         i_pose = poses[i] # read i-th pose
 
+        """TEST CASE"""
+        # read 000000.label file
+        print(i_label[120, :, 31])
+        # add a string to the dataset
+        i_label[120, :, 31] = 40
+        print(i_label[120, :, 31]) 
+
+        """
         for j in range(i + increment, i + increment * n, increment):
             # read j-th data
             j_bin, j_label, j_invalid, j_occluded = get_data(file_base, dataset) # read j-th voxel data
@@ -272,15 +279,19 @@ if __name__ == '__main__':
             i_label = add_label_data(i_label, aligned_j_label)
             i_invalid = add_binary_data(i_invalid, aligned_j_invalid)
             i_occluded = add_binary_data(i_occluded, aligned_j_occluded)
-
+        """
+        
 
         # Save fused scan
+        print("Save Begin")
         np.packbits(i_bin).tofile(os.path.join(output_dir, f"{file_base}.bin"))
-        i_label.tofile(os.path.join(output_dir, f"{file_base}.label"))  # Assuming i_label needs to be saved in 16-bit format
+        # Save label file
+        #i_label.tofile(os.path.join(output_dir, f"{file_base}.label"))  # Assuming i_label needs to be saved in 16-bit format
+        i_label.astype(np.uint16).tofile(os.path.join(output_dir, f"{file_base}.label"))
         np.packbits(i_invalid).tofile(os.path.join(output_dir, f"{file_base}.invalid"))
         np.packbits(i_occluded).tofile(os.path.join(output_dir, f"{file_base}.occluded"))
-
-        
+        print("Save done")
+        exit(0)
 
         # Print progress & time
         if (i!= 0) and (i != progress_interval*increment*10) and (i % (progress_interval*increment) == 0.0):
