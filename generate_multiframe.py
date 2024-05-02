@@ -1,3 +1,7 @@
+"""
+    This file 'generate_multiframe.py' is used to create multiframe semantic KITTI dataset.
+    Created by Heejun Park :)
+"""
 import numpy as np
 import argparse
 import os
@@ -6,7 +10,7 @@ import time
 
 def count_files(directory):
     """
-    Returns the number of files in the specified directory
+        Returns the number of files in the specified directory
     """
     full_path = os.path.abspath(directory) # get the full path name
     items = os.listdir(full_path) # get the list of files in the path
@@ -17,8 +21,9 @@ def count_files(directory):
 
 def get_data(file_base, dataset_path):
     """
-    - read the data
-    - return data
+        What does this function do?
+            - read the data
+            - return data
     """    
 
     
@@ -147,16 +152,12 @@ def align_label_data(data, rotation_diff, translation_diff):
     return aligned_data
 
 
-def add_binary_data(i_data, j_data):
 
-    return i_data
-
-def add_label_data(i_data, j_data):
-
-    return i_data
 
 
 if __name__ == '__main__':
+    start_time = time.time()
+
     # 1. argument settings
     parser = argparse.ArgumentParser(
         description='code for generating multiframe semantic-KITTI dataset for semantic scene completion task'
@@ -213,41 +214,52 @@ if __name__ == '__main__':
 
     
 
-    number_files = count_files(voxel_locaiton)
-    number_files = int((number_files/n) * increment)  # Adjust based on your dataset specifics
+    number_input_files = count_files(voxel_locaiton)
 
-    sequence_length = number_files - increment
+    number_distinct_input_files = int(number_input_files/4)  # bin, label, occluded, invalid. so I am dividing by 4
+    
+    sequence_length = (number_distinct_input_files-1)*increment
+
+    # Variblaes needed for printing progress
+    number_output_files = number_distinct_input_files - (n-1)
+    progress_interval_percent = 10 # print every 10 percent
+    progress_interval = number_output_files//progress_interval_percent 
+
     print(f'Location of dataset: {dataset}')
     print(f'Location of output directory: {output}')
-    print(f'number of multiframe: {n}')
+    print(f'multiframe length: {n}')
     print(f'increment size: {increment}')
     print(f'files from 0 ~ {sequence_length} will be used')
+    print(f'total number of output files: {number_output_files}')
 
     # 3. read poses.txt file (it's more efficient to read poses.txt just once)
     poses_locaiton = os.path.join(dataset, "poses.txt")
     poses = load_poses(poses_locaiton)
+    
 
-
-    interval = 1 # default should be 100
+    # Used for printing out the passed time during execution
+    start_time = time.time()
+    print("Begin Multi-frame Generation :)")
 
     # algorithm for creating the multi-frame semantic KITTI dataset
-    for i in range(0, sequence_length - increment * (n-1), increment):
+    for i in range(0, sequence_length - increment * (n-2), increment):
+        
         file_base = f"{i:06d}"
-        start = time.time()
 
+
+        
         # read i-th data
         i_bin, i_label, i_invalid, i_occluded = get_data(file_base, dataset) # read i-th voxel data
         i_pose = poses[i] # read i-th pose
 
         for j in range(i + increment, i + increment * n, increment):
             # read j-th data
-            print(j) 
             j_bin, j_label, j_invalid, j_occluded = get_data(file_base, dataset) # read j-th voxel data
             j_pose = poses[j] # read j-th pose
 
             # now, let's calculate the pose difference between i and j
             rotational_diff, translation_diff = calculate_diff(i_pose, j_pose)
-            now  = time.time()
+
 
             # NOW WE SHALL BEGIN THE ALIGNING PROCESS! (align j into i-th space)
             # I need to optimize this code.... takes so faqing long
@@ -255,15 +267,12 @@ if __name__ == '__main__':
             aligned_j_label = align_label_data(j_label, rotational_diff, translation_diff)
             aligned_j_invalid = align_binary_data(j_invalid, rotational_diff, translation_diff)
             aligned_j_occluded = align_binary_data(j_occluded, rotational_diff, translation_diff)
-            yeah = time.time()
-
-            print(yeah- now)
+  
             i_bin = add_binary_data(i_bin, aligned_j_bin)
             i_label = add_label_data(i_label, aligned_j_label)
             i_invalid = add_binary_data(i_invalid, aligned_j_invalid)
             i_occluded = add_binary_data(i_occluded, aligned_j_occluded)
-            no = time.time()
-            print(no - yeah)
+
 
         # Save fused scan
         np.packbits(i_bin).tofile(os.path.join(output_dir, f"{file_base}.bin"))
@@ -272,12 +281,21 @@ if __name__ == '__main__':
         np.packbits(i_occluded).tofile(os.path.join(output_dir, f"{file_base}.occluded"))
 
         
-        # Print progress
-        if i % interval == 0:
-            
-            end = time.time()
-            elapsed_time = end - start
+
+        # Print progress & time
+        if (i!= 0) and (i != progress_interval*increment*10) and (i % (progress_interval*increment) == 0.0):
+            end_time = time.time()
+            elapsed_time = end_time - start_time
             minutes_passed = int(elapsed_time / 60)
             seconds_passed = int(elapsed_time % 60)
-            print(f'file {i} done. execution time: {minutes_passed}:{seconds_passed}')
-            
+            unge = sequence_length - increment * (n-1)
+            print(f'Progress: {i/unge*100.0:.2f}%, Time Passes: {minutes_passed}:{seconds_passed:02d}')
+    
+    # Print final progress and time
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    minutes_passed = int(elapsed_time / 60)
+    seconds_passed = int(elapsed_time % 60)
+    unge = sequence_length - increment * (n-1)
+    print(f'Progress: 100.00%, Time Passes: {minutes_passed}:{seconds_passed:02d}')
+    print("Multi-frame Generation Complete :D")
