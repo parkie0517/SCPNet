@@ -153,7 +153,26 @@ def align_label_data(data, rotation_diff, translation_diff):
     return aligned_data
 
 
-
+def load_calib(calib_path):
+    """
+        1. read the calib.txt
+        2. find the Tr data
+        3. return it
+    """
+    # Initialize a list to hold the extracted numbers
+    tr_numbers = []
+    # Open and read the file line by line
+    with open(calib_path, 'r') as file:
+        for line in file:
+            # Check if the line starts with 'Tr:'
+            if line.startswith('Tr:'):
+                # Split the line into parts after 'Tr:'
+                parts = line.split()[1:]  # Skip the 'Tr:' part
+                # Convert each part to a float and add to the list
+                tr_numbers = [float(num) for num in parts]
+                break
+    matrix = np.array(tr_numbers).reshape(3, 4)
+    return matrix
 
 
 if __name__ == '__main__':
@@ -234,9 +253,13 @@ if __name__ == '__main__':
     print(f'total number of output files: {number_output_files}')
 
     # 3. read poses.txt file (it's more efficient to read poses.txt just once)
-    poses_locaiton = os.path.join(dataset, "poses.txt")
-    poses = load_poses(poses_locaiton)
-    
+    poses_location = os.path.join(dataset, "poses.txt")
+    poses = load_poses(poses_location)
+
+    # 4. read the calib.txt
+    calib_location = os.path.join(dataset, "calib.txt")
+    calibration = load_calib(calib_location)
+
 
     # Used for printing out the passed time during execution
     start_time = time.time()
@@ -251,14 +274,8 @@ if __name__ == '__main__':
         i_bin, i_label, i_invalid, i_occluded = get_data(file_base, dataset) # read i-th voxel data
         i_pose = poses[i] # read i-th pose
 
-        """TEST CASE"""
-        # read 000000.label file
-        print(i_label[120, :, 31])
-        # add a string to the dataset
-        i_label[120, :, 31] = 40
-        print(i_label[120, :, 31]) 
 
-        """
+        
         for j in range(i + increment, i + increment * n, increment):
             # read j-th data
             j_bin, j_label, j_invalid, j_occluded = get_data(file_base, dataset) # read j-th voxel data
@@ -279,9 +296,8 @@ if __name__ == '__main__':
             i_label = add_label_data(i_label, aligned_j_label)
             i_invalid = add_binary_data(i_invalid, aligned_j_invalid)
             i_occluded = add_binary_data(i_occluded, aligned_j_occluded)
-        """
         
-
+        
         # Save fused scan
         print("Save Begin")
         np.packbits(i_bin).tofile(os.path.join(output_dir, f"{file_base}.bin"))
@@ -291,7 +307,6 @@ if __name__ == '__main__':
         np.packbits(i_invalid).tofile(os.path.join(output_dir, f"{file_base}.invalid"))
         np.packbits(i_occluded).tofile(os.path.join(output_dir, f"{file_base}.occluded"))
         print("Save done")
-        exit(0)
 
         # Print progress & time
         if (i!= 0) and (i != progress_interval*increment*10) and (i % (progress_interval*increment) == 0.0):
