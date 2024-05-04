@@ -7,6 +7,7 @@ from numpy.linalg import inv
 import argparse
 import os
 import time
+import shutil
 
 
 def count_files(directory):
@@ -140,7 +141,6 @@ def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
                 if j_data[x, y, z] == 1:
                     # 1. align
                     voxel_coords = np.array([x, y, z, 1])  # homogeneous coordinates
-                    print(voxel_coords)
                     translated_coords = transformation_matrix @ voxel_coords
 
                     new_x, new_y, new_z, _ = np.round(translated_coords).astype(int)
@@ -170,7 +170,6 @@ def align_filter_add_label_data(i_data, j_data, transformation_matrix):
                 if j_data[x, y, z] != 0:
                     # 1. align
                     voxel_coords = np.array([x, y, z, 1])  # homogeneous coordinates
-                    print(voxel_coords)
                     translated_coords = transformation_matrix @ voxel_coords
                     new_x, new_y, new_z, _ = np.round(translated_coords).astype(int)
 
@@ -229,6 +228,8 @@ def load_calib(calib_path):
                 tr_numbers = [float(num) for num in parts]
                 break
     matrix = np.array(tr_numbers).reshape(3, 4)
+    matrix = np.vstack([matrix, np.array([0, 0, 0, 1])])
+
     return matrix
 
 
@@ -302,6 +303,12 @@ if __name__ == '__main__':
     progress_interval_percent = 10 # print every 10 percent
     progress_interval = number_output_files//progress_interval_percent 
 
+    # Copy necessary files
+    shutil.copy(os.path.join(dataset, "poses.txt"), output)
+    shutil.copy(os.path.join(dataset, "calib.txt"), output)
+    shutil.copy(os.path.join(dataset, "times.txt"), output)
+
+
     print(f'Location of dataset: {dataset}')
     print(f'Location of output directory: {output}')
     print(f'multiframe length: {n}')
@@ -330,13 +337,14 @@ if __name__ == '__main__':
         # read i-th data
         i_bin, i_label, i_invalid, i_occluded = get_data(i_file_base, dataset) # read i-th voxel data
         i_pose = poses[i] # read i-th pose
-        #inv_i_pose = inv(i_pose)
 
+        # Copy label, invalid, occluded file
+        shutil.copy(os.path.join(dataset, "voxels", f"{i_file_base}.label"), output_dir)
+        shutil.copy(os.path.join(dataset, "voxels", f"{i_file_base}.invalid"), output_dir)
+        shutil.copy(os.path.join(dataset, "voxels", f"{i_file_base}.occluded"), output_dir)
 
-        
         for j in range(i + increment, i + increment * n, increment):
             j_file_base = f"{j:06d}" # Convert i's data type from INT to STR and pad 0 at the front
-            print(j_file_base)
             # read j-th data
             j_bin, j_label, j_invalid, j_occluded = get_data(j_file_base, dataset) # read j-th voxel data
             j_pose = poses[j] # read j-th pose
@@ -347,9 +355,8 @@ if __name__ == '__main__':
             """
 
             # get the calibrated transformation matrix
-            transformation_matrix = i_pose @ inv(j_pose) # not calibrated yet
+            transformation_matrix = i_pose @ inv(j_pose) @ calibration
 
-            #calibrated_matrix = None
             """ORIGINAL
             # NOW WE SHALL BEGIN THE ALIGNING PROCESS! (align j into i-th space)
             # I need to optimize this code.... takes so faqing long
@@ -369,7 +376,6 @@ if __name__ == '__main__':
             #i_label = align_filter_add_label_data(i_label, j_label, transformation_matrix)
         
         # Save fused scan
-        print("Save Begin")
         np.packbits(i_bin).tofile(os.path.join(output_dir, f"{i_file_base}.bin"))
         """
         # Save label file
@@ -377,8 +383,6 @@ if __name__ == '__main__':
         np.packbits(i_invalid).tofile(os.path.join(output_dir, f"{i_file_base}.invalid"))
         np.packbits(i_occluded).tofile(os.path.join(output_dir, f"{i_file_base}.occluded"))
         """
-        print("Save done")
-        exit(0)
 
         # Print progress & time
         if (i!= 0) and (i != progress_interval*increment*10) and (i % (progress_interval*increment) == 0.0):
