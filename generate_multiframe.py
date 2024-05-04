@@ -3,6 +3,7 @@
     Created by Heejun Park :)
 """
 import numpy as np
+from numpy.linalg import inv
 import argparse
 import os
 import time
@@ -124,6 +125,34 @@ def align_binary_data(data, rotation_diff, translation_diff):
                     aligned_data[new_x, new_y, new_z] = data[x, y, z]
 
     return aligned_data
+
+def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
+    """
+    this function is used to transform j to i
+
+    1. transform
+    2. filter (I use filter to only convert j-th voxels that will be inside the i-th coordinate frame)
+    """
+
+    # repeat this process for all the individual voxels (computationally heavy....)
+    for z in range(j_data.shape[2]): # = range(0, 32)
+        for y in range(j_data.shape[1]): # = range(0, 256)
+            for x in range(j_data.shape[0]): # = range(0, 256)
+                if j_data[x, y, z] == 1:
+                    # 1. align
+                    voxel_coords = np.array([x, y, z, 1])  # homogeneous coordinates
+                    translated_coords = transformation_matrix @ voxel_coords
+                    new_x, new_y, new_z, _ = np.round(translated_coords).astype(int)
+
+                    # 2. filter
+                    if (0 <= new_x < j_data.shape[0] and 0 <= new_y < j_data.shape[1] and 0 <= new_z < j_data.shape[2]):                    
+                        # 3. add
+                        if i_data[new_x, new_y, new_z] == 0:
+                            i_data[new_x, new_y, new_z] = 1
+
+
+
+    return i_data
 
 
 def align_label_data(data, rotation_diff, translation_diff):
@@ -251,7 +280,7 @@ if __name__ == '__main__':
     print(f'increment size: {increment}')
     print(f'files from 0 ~ {sequence_length} will be used')
     print(f'total number of output files: {number_output_files}')
-
+    
     # 3. read poses.txt file (it's more efficient to read poses.txt just once)
     poses_location = os.path.join(dataset, "poses.txt")
     poses = load_poses(poses_location)
@@ -273,6 +302,7 @@ if __name__ == '__main__':
         # read i-th data
         i_bin, i_label, i_invalid, i_occluded = get_data(file_base, dataset) # read i-th voxel data
         i_pose = poses[i] # read i-th pose
+        #inv_i_pose = inv(i_pose)
 
 
         
@@ -281,32 +311,42 @@ if __name__ == '__main__':
             j_bin, j_label, j_invalid, j_occluded = get_data(file_base, dataset) # read j-th voxel data
             j_pose = poses[j] # read j-th pose
 
+            """ ORIGINAL
             # now, let's calculate the pose difference between i and j
-            rotational_diff, translation_diff = calculate_diff(i_pose, j_pose)
+            # rotational_diff, translation_diff = calculate_diff(i_pose, j_pose)
+            """
 
+            """TEST"""
+            transformation_matrix = i_pose @ inv(j_pose) # not calibrated yet
 
+            """ORIGINAL
             # NOW WE SHALL BEGIN THE ALIGNING PROCESS! (align j into i-th space)
             # I need to optimize this code.... takes so faqing long
             aligned_j_bin = align_binary_data(j_bin, rotational_diff, translation_diff)
             aligned_j_label = align_label_data(j_label, rotational_diff, translation_diff)
             aligned_j_invalid = align_binary_data(j_invalid, rotational_diff, translation_diff)
             aligned_j_occluded = align_binary_data(j_occluded, rotational_diff, translation_diff)
-  
+            
             i_bin = add_binary_data(i_bin, aligned_j_bin)
             i_label = add_label_data(i_label, aligned_j_label)
             i_invalid = add_binary_data(i_invalid, aligned_j_invalid)
             i_occluded = add_binary_data(i_occluded, aligned_j_occluded)
-        
+            """
+            
+            """TEST"""
+            i_bin = align_filter_add_binary_data(i_bin, j_bin, transformation_matrix)
         
         # Save fused scan
         print("Save Begin")
         np.packbits(i_bin).tofile(os.path.join(output_dir, f"{file_base}.bin"))
+        """
         # Save label file
-        #i_label.tofile(os.path.join(output_dir, f"{file_base}.label"))  # Assuming i_label needs to be saved in 16-bit format
         i_label.astype(np.uint16).tofile(os.path.join(output_dir, f"{file_base}.label"))
         np.packbits(i_invalid).tofile(os.path.join(output_dir, f"{file_base}.invalid"))
         np.packbits(i_occluded).tofile(os.path.join(output_dir, f"{file_base}.occluded"))
+        """
         print("Save done")
+        exit(0)
 
         # Print progress & time
         if (i!= 0) and (i != progress_interval*increment*10) and (i % (progress_interval*increment) == 0.0):
