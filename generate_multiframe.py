@@ -126,7 +126,7 @@ def align_binary_data(data, rotation_diff, translation_diff):
 
     return aligned_data
 
-def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
+def align_filter_add_binary_data(i_data, j_data, transformation_matrix, calibration_matrix):
     """
     this function is used to transform j to i
 
@@ -142,6 +142,7 @@ def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
                     # 1. align
                     voxel_coords = np.array([x, y, z, 1])  # homogeneous coordinates
                     translated_coords = transformation_matrix @ voxel_coords
+
                     new_x, new_y, new_z, _ = np.round(translated_coords).astype(int)
 
                     # 2. filter
@@ -151,6 +152,32 @@ def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
                             i_data[new_x, new_y, new_z] = 1
 
 
+
+    return i_data
+
+def align_filter_add_label_data(i_data, j_data, transformation_matrix):
+    """
+    this function is used to transform j to i
+
+    1. transform
+    2. filter (I use filter to only convert j-th voxels that will be inside the i-th coordinate frame)
+    """
+
+    # repeat this process for all the individual voxels (computationally heavy....)
+    for z in range(j_data.shape[2]): # = range(0, 32)
+        for y in range(j_data.shape[1]): # = range(0, 256)
+            for x in range(j_data.shape[0]): # = range(0, 256)
+                if j_data[x, y, z] != 0:
+                    # 1. align
+                    voxel_coords = np.array([x, y, z, 1])  # homogeneous coordinates
+                    translated_coords = transformation_matrix @ voxel_coords
+                    new_x, new_y, new_z, _ = np.round(translated_coords).astype(int)
+
+                    # 2. filter
+                    if (0 <= new_x < j_data.shape[0] and 0 <= new_y < j_data.shape[1] and 0 <= new_z < j_data.shape[2]):                    
+                        # 3. add
+                        if i_data[new_x, new_y, new_z] == 0:
+                            i_data[new_x, new_y, new_z] = j_data[new_x, new_y, new_z] # """fix here!"""
 
     return i_data
 
@@ -316,8 +343,11 @@ if __name__ == '__main__':
             # rotational_diff, translation_diff = calculate_diff(i_pose, j_pose)
             """
 
-            """TEST"""
+            # get the calibrated transformation matrix
             transformation_matrix = i_pose @ inv(j_pose) # not calibrated yet
+            print(calibration)
+            exit(0)
+            calibrated_matrix = None
 
             """ORIGINAL
             # NOW WE SHALL BEGIN THE ALIGNING PROCESS! (align j into i-th space)
@@ -335,6 +365,7 @@ if __name__ == '__main__':
             
             """TEST"""
             i_bin = align_filter_add_binary_data(i_bin, j_bin, transformation_matrix)
+            #i_label = align_filter_add_label_data(i_label, j_label, transformation_matrix)
         
         # Save fused scan
         print("Save Begin")
