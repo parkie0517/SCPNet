@@ -185,7 +185,7 @@ class SemKITTI_sk_multiscan(data.Dataset):
         self.times = []
         self.poses = []
 
-        for seq in range(0, 22):
+        for seq in range(0, 22): # There are 0~21 sequences in total
             seq_folder = join(self.data_path, str(seq).zfill(2))
 
             # Read Calib
@@ -253,11 +253,11 @@ class SemKITTI_sk_multiscan(data.Dataset):
 
         return poses
 
-    def fuse_multi_scan(self, points, pose0, pose):
+    def fuse_multi_scan(self, points, pose0, pose):  # B, A's pose, B's pose
 
-        hpoints = np.hstack((points[:, :3], np.ones_like(points[:, :1])))
-        new_points = np.sum(np.expand_dims(hpoints, 2) * pose.T, axis=1)
-        new_points = new_points[:, :3]
+        hpoints = np.hstack((points[:, :3], np.ones_like(points[:, :1]))) # check
+        new_points = np.sum(np.expand_dims(hpoints, 2) * pose.T, axis=1) # check
+        new_points = new_points[:, :3] # check
         new_coords = new_points - pose0[:3, 3]
         new_coords = np.sum(np.expand_dims(new_coords, 2) * pose0[:3, :3], axis=1)
         new_coords = np.hstack((new_coords, points[:, 3:]))
@@ -265,14 +265,14 @@ class SemKITTI_sk_multiscan(data.Dataset):
         return new_coords
 
     def __getitem__(self, index):
-        raw_data = np.fromfile(self.im_idx[index], dtype=np.float32).reshape((-1, 4))  # point cloud
+        raw_data = np.fromfile(self.im_idx[index], dtype=np.float32).reshape((-1, 4))  # A
         origin_len = len(raw_data)
         voxel_label = 1
 
         number_idx = int(self.im_idx[index][-10:-4])
         dir_idx = int(self.im_idx[index][-22:-20])
 
-        pose0 = self.poses[dir_idx][number_idx]
+        pose0 = self.poses[dir_idx][number_idx] # pose_A
 
         for fuse_idx in range(self.multiscan):
             plus_idx = fuse_idx + 1
@@ -283,9 +283,9 @@ class SemKITTI_sk_multiscan(data.Dataset):
             files = list(pathlib.Path(voxel_path).glob('*.label'))
             
             if data_idx < len(files):
-                pose = self.poses[dir_idx][data_idx]
+                pose = self.poses[dir_idx][data_idx] # pose_B
 
-                raw_data2 = np.fromfile(newpath2, dtype=np.float32).reshape((-1, 4))
+                raw_data2 = np.fromfile(newpath2, dtype=np.float32).reshape((-1, 4)) # B
 
                 if voxel_label == 0:
                     if self.imageset == 'test':
@@ -295,7 +295,7 @@ class SemKITTI_sk_multiscan(data.Dataset):
                                                       dtype=np.int32).reshape((-1, 1))
                         annotated_data2 = annotated_data2 & 0xFFFF  # delete high 16 digits binary
 
-                raw_data2 = self.fuse_multi_scan(raw_data2, pose0, pose)
+                raw_data2 = self.fuse_multi_scan(raw_data2, pose0, pose) # B, A's pose, B's pose
 
                 if len(raw_data2) != 0:
                     raw_data = np.concatenate((raw_data, raw_data2), 0)

@@ -26,9 +26,8 @@ def get_data(file_base, dataset_path):
         What does this function do?
             - read the data
             - return data
-    """    
+    """
 
-    
     # build file path
     bin_path = os.path.join(dataset_path, "voxels", f"{file_base}.bin")
     label_path = os.path.join(dataset_path, "voxels", f"{file_base}.label")
@@ -42,7 +41,7 @@ def get_data(file_base, dataset_path):
             bits = np.unpackbits(data)  # Convert bytes to bits
             return bits.reshape((256, 256, 32))  # Reshape to 3D array
 
- 
+
     def load_label_data(file_path):
         # Open the file in binary mode
         with open(file_path, 'rb') as file:
@@ -134,6 +133,7 @@ def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
     1. transform
     2. filter (I use filter to only convert j-th voxels that will be inside the i-th coordinate frame)
     """
+    
     # repeat this process for all the individual voxels (computationally heavy....)
     for z in range(j_data.shape[2]): # = range(0, 32)
         for y in range(j_data.shape[1]): # = range(0, 256)
@@ -151,6 +151,52 @@ def align_filter_add_binary_data(i_data, j_data, transformation_matrix):
                         if i_data[new_x, new_y, new_z] == 0:
                             i_data[new_x, new_y, new_z] = 1
 
+    return i_data
+
+def align_filter_add_binary_data_optimized(i_data, j_data, transformation_matrix):
+    """
+    this function is used to transform j to i
+
+    1. transform
+    2. filter (I use filter to only convert j-th voxels that will be inside the i-th coordinate frame)
+    """
+    coords_list = []
+    # repeat this process for all the individual voxels (computationally heavy....)
+    for z in range(j_data.shape[2]): # = range(0, 32)
+        for y in range(j_data.shape[1]): # = range(0, 256)
+            for x in range(j_data.shape[0]): # = range(0, 256)
+                if j_data[x, y, z] == 1:
+                    # 1. align
+                    voxel_coords = np.array([[x], [y], [z], [1]])
+                    coords_list.append(voxel_coords)
+    # From here
+    j_coords = np.array(coords_list)
+    j_coords = j_coords.squeeze().T
+
+    translated_coords = transformation_matrix @ j_coords
+
+    quantized_coords = np.round(translated_coords).astype(int)
+
+    # Extract x, y, z coordinates
+    x_coords = quantized_coords[0, :]
+    y_coords = quantized_coords[1, :]
+    z_coords = quantized_coords[2, :]
+
+    # Create boolean masks based on boundary conditions
+    x_mask = (0 <= x_coords) & (x_coords < j_data.shape[0])
+    y_mask = (0 <= y_coords) & (y_coords < j_data.shape[1])
+    z_mask = (0 <= z_coords) & (z_coords < j_data.shape[2])
+
+    # Combine the masks to filter out coordinates outside the boundaries
+    valid_mask = x_mask & y_mask & z_mask
+
+    # Apply the mask to filter quantized_coords
+    filtered_coords = quantized_coords[:, valid_mask]
+
+    x_indices = filtered_coords[0, :]
+    y_indices = filtered_coords[1, :]
+    z_indices = filtered_coords[2, :]
+    i_data[x_indices, y_indices, z_indices] = 1
 
 
     return i_data
@@ -355,7 +401,7 @@ if __name__ == '__main__':
             """
 
             # get the calibrated transformation matrix
-            transformation_matrix = i_pose @ inv(j_pose) @ calibration
+            transformation_matrix = i_pose @ inv(j_pose)
 
             """ORIGINAL
             # NOW WE SHALL BEGIN THE ALIGNING PROCESS! (align j into i-th space)
@@ -372,7 +418,8 @@ if __name__ == '__main__':
             """
             
             """TEST"""
-            i_bin = align_filter_add_binary_data(i_bin, j_bin, transformation_matrix)
+            # i_bin = align_filter_add_binary_data(i_bin, j_bin, transformation_matrix)
+            i_bin = align_filter_add_binary_data_optimized(i_bin, j_bin, transformation_matrix)
             #i_label = align_filter_add_label_data(i_label, j_label, transformation_matrix)
         
         # Save fused scan

@@ -85,14 +85,14 @@ def main(args): # args should contain informatin about the path of the configura
     # the code below is missing the proposed distillation loss
     loss_func, lovasz_softmax = loss_builder.build(wce=True, lovasz=True, 
                                                    num_class=num_class, ignore_label=ignore_label)
-    
+    print('start')
     train_dataset_loader, val_dataset_loader, val_pt_dataset = data_builder.build(dataset_config,
                                                                   train_dataloader_config,
                                                                   val_dataloader_config,
                                                                   grid_size=grid_size,
                                                                   use_tta=False,
                                                                   use_multiscan=True)
-
+    print('end')
     # training
     epoch = 0
     best_val_miou = 0
@@ -120,7 +120,6 @@ def main(args): # args should contain informatin about the path of the configura
             if global_iter % check_iter == 0 and epoch > 0:
                 my_model.eval()
 
-                
                 val_method = 2  # 1-segmentation method, 2-completion method
                 if val_method == 1:
                     hist_list = []
@@ -243,6 +242,6 @@ if __name__ == '__main__':
     #print(args) # Prints the parsed command line arguments
     
     # tensorboard
-    writer = SummaryWriter('./logs/SCPNet_multiframe_4')
+    writer = SummaryWriter('./logs/SCPNet_multiframe_5')
     main(args)
     writer.close()

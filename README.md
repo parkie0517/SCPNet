@@ -1,11 +1,14 @@
 # SCPNet
 This repo is based on the official SCPNet code.
 
+## 0. Purpose of this Repository
+The official SCPNet code is out of date. So when you try following their description of installing the envrionment, you will run into endless errors. So I decided to write a new repo that helps you run the official SCPNet code :D 
+
 
 ## 1. Environment Setup Guide (Works as of 2024-04-02)
 - python==3.7 ✅
-    - conda create -n SCPNet python=3.7
-    - conda activate SCPNet
+    - conda create -n SCPNet_MF python=3.7
+    - conda activate SCPNet_MF
     - conda config --set ssl_verify false
 - torch 1.10.0, cuda==11.3 (if you get a Conda HTTP error, keep on reinstalling until it finishes. There is no possible solution for this as this is a network issue) ✅
     - conda install -y pytorch==1.10.0 torchvision==0.11.0 cudatoolkit=11.3 -c pytorch -c conda-forge
@@ -49,13 +52,23 @@ This repo is based on the official SCPNet code.
 
 
 ## 2. Dataset Preparation
+### 2.1. Single Frame SCPNet
 - Follow the KITTI dataset official guide
 - You need the xxxxxx.bin and xxxxxx.label files inside the voxels directory the for semantic scene completion task
 - You will have 4649 data for training and validation  
 ![alt text](./image_src/image-1.png)
 
+### 2.2. Multi Frame SCPNet
+If you want to train SCPNet with fused multi frame semantic KITTI, I recommend you go [HERE](https://github.com/parkie0517/SemanticKITTI-MultiFrameGeneration).
 
 ## 3. Training
+- open './config/semantickitti-multiscan' file
+    - change the datapath to the correct location of your dataset
+    - save and exit
+- open './train_scpnet_comp.py'
+    - go down to the very end
+    - change the location where the tensorboard logs will be written
+    - save and exit
 - run the code below to train the SCPNet model
     - python train_scpnet_comp.py
     - CUDA_VISIBLE_DEVICES=1 python train_scpnet_comp.py
@@ -70,8 +83,14 @@ This repo is based on the official SCPNet code.
     - cd PATH_TO_THE_CLONED_DIRECTORY
 - run the code below
     - python evaluate_completion.py --dataset LOCATION_OF_THE_ORIGINAL_KITTIE_DATASET --predictions LOCATION_OF_THE_PREDICTIONS --split valid
+
+### 4.1. Single Frame SCPNet 
 - the image below is the result that I got
+
 ![alt text](./image_src/image.png)
+
+### 4.2. Multi Frame SCPNet
+- To be constructed!
 
 
 ## 5. Visualization
@@ -84,14 +103,6 @@ This repo is based on the official SCPNet code.
     - python visualize_voxels.py --sequence 00 --dataset /c/Users/Juni/desktop/scpnet/dataset/
 - if you run into no module found error, then install the necessary packages
 
-
-## 6. Generate Multi-frame Dataset
-- The image below is the pseudo algorithm I made to create the multi-frame generation algorithm  
-![alt text](image.png)
-- The text file of the algorithm is also in this repository
-- Okay, now run the code below
-    - python generate_multiframe.py --dataset PATH_TO_KITTI --number NUMBER_OF_N --output OUTPUT_PATH
-    - CUDA_VISIBLE_DEVICES=1 python generate_multiframe.py -d /mnt/ssd2/jihun/dataset/sequences/00 -o /mnt/ssd2/jihun/dataset/multiframe/sequences/00
 
 ## 6. Things I Was Curiousd About
 - How does SCPNet address the problem of information loss in the segmentation sub-network?

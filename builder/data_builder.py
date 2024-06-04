@@ -142,7 +142,7 @@ def build(dataset_config,
                                                      num_workers=val_dataloader_config["num_workers"])
     print('length of train dataset loader: '+ str(len(train_dataset_loader)))
     print('length of validation dataset loader: '+ str(len(val_dataset_loader)))
-    exit(0)
+
     if use_tta:
         return train_dataset_loader, val_dataset_loader, val_pt_dataset
     else:
